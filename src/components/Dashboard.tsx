@@ -1,7 +1,9 @@
 import supabase from "../lib/supabase-client.tsx";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const Dashboard = () => {
+
+  const [totalSales, setTotalSales] = useState(0)
 
   const fetchMetrics = async () => {
     return supabase
@@ -9,22 +11,23 @@ const Dashboard = () => {
     .select(
       `
     name,
-    value
+    value.sum()
     `,
     )
-    .order('value', {ascending: false})
-    .limit(1)
   }
 
   useEffect(() => {
-    fetchMetrics().then(console.log)
+    fetchMetrics().then((res) => {
+      const total = res.data?.reduce((acc, curr) => acc + curr.sum, 0)
+      total && setTotalSales(total)
+    })
   }, [])
 
 
   return (
     <div className="dashboard-wrapper">
       <div className="chart-container">
-        <h2>Total Sales This Quarter ($)</h2>
+        <h2>Total Sales This Quarter ($ {totalSales})</h2>
       </div>
     </div>
   )
